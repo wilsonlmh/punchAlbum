@@ -152,7 +152,7 @@
             e.target.parentElement.style.left = e.target.parentElement.getBoundingClientRect().left + "px";
             e.target.parentElement.style.top = e.target.parentElement.getBoundingClientRect().top + "px";
             e.target.parentElement.style.position = "absolute";
-            e.target.parentElement.style.animation = "fadeOut 1 " + ms / 2 + "ms both";
+            e.target.parentElement.style.animation = "fadeOut " + ms / 2 + "ms 1 both";
             var css = [];
             for (i = 0; i < posters.length; i++) {
                 var rect = posters[i].getBoundingClientRect();
