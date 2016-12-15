@@ -1,0 +1,216 @@
+<html>
+
+<head>
+    <style>
+        body {
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @media all and (orientation:portrait) {
+            .choices,
+            #type {
+                text-align: justify;
+                text-align-last: justify;
+                vertical-align: middle;
+                line-height: 33vh;
+                font-size: 0;
+                word-break: 3;
+            }
+            .posterWrap {
+                width: 33vw;
+                text-align: center;
+                text-align-last: center;
+                display: inline-block;
+            }
+            .poster {
+                max-width: 30vw;
+                max-height: 30vh;
+                width: auto;
+                height: auto;
+                vertical-align: middle;
+            }
+        }
+        
+        @media all and (orientation:landscape) {
+            .choices,
+            #type {
+                columns: 3;
+                word-spacing: 33vw;
+                -moz-columns: 3;
+                -moz-column-fill: balance;
+            }
+            .posterWrap {
+                left: 0;
+                top: 0;
+                display: inline-block;
+            }
+            .poster {
+                display: inline-block;
+                max-height: 30vh;
+                max-width: 30vw;
+                margin: 1.5vh 0;
+                width: auto;
+                height: auto;
+            }
+        }
+        
+        .poster {
+            pointer-events: none;
+        }
+        
+        #type {
+            display: block;
+            z-index: 100;
+        }
+        
+        #punchChoicesWrap {
+            position: fixed;
+            opacity: 0;
+        }
+        
+        .choices.hidden {
+            position: fixed;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            z-index: -100;
+            pointer-events: none;
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1.0;
+            }
+            to {
+                opacity: 0.0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0.0;
+            }
+            to {
+                opacity: 1.0;
+            }
+        }
+    </style>
+    <script>
+        //Anonymous animate using css @keyfames
+        function cssAnimate(t, keyframeCss, animationDuration, animationIterationCount, animationTimingFunction, animationFillMode, animationDelay, animationDirection, animationPlayState) {
+            var replace = replace || false;
+            var animationDuration = animationDuration || "1s";
+            var animationIterationCount = animationIterationCount || 1;
+            var animationTimingFunction = animationTimingFunction || "linear";
+            var animationFillMode = animationFillMode || "both";
+            var animationDelay = animationDelay || "0";
+            var animationDirection = animationDirection || "";
+            var animationPlayState = animationPlayState || "initial";
+
+            function keyframe(name, css) {
+                var styleElement = document.getElementById("keyframe-" + name);
+                if (!styleElement) {
+                    styleElement = document.createElement("style");
+                    styleElement.setAttribute("id", "keyframe-" + name);
+                    document.head.appendChild(styleElement);
+                }
+                styleElement.innerHTML = "@keyframes keyframe-" + name + "{" + css + "}";
+            }
+            var keyframeName = "";
+            if (!(t.getAttribute("animator") == null || t.getAttribute("animator") == "")) {
+                keyframeName = t.getAttribute("animator");
+            }
+            else {
+                keyframeName = (new Date().getTime() % 1000000 * 1000) + (new Date().getMilliseconds()) * 1000 + Math.round(Math.random() * 1000);
+                t.setAttribute("animator", keyframeName);
+            }
+            keyframe(keyframeName, keyframeCss);
+            t.style.animationName = "keyframe-" + keyframeName;
+            t.style.animationDuration = animationDuration;
+            t.style.animationTimingFunction = animationTimingFunction;
+            t.style.animationFillMode = animationFillMode;
+            t.style.animationDelay = animationDelay;
+            t.style.animationDirection = animationDirection;
+            t.style.animationPlayState = animationPlayState;
+            t.style.animationIterationCount = animationIterationCount;
+        }
+    </script>
+    <script>
+        function doPunch(e, ms) {
+            var ms = ms || 1000;
+            var choicesPool = document.getElementsByClassName("choices");
+            var choices = {};
+            for (i = 0; i < choicesPool.length; i++) {
+                if (choicesPool[i].getAttribute("typeID") == e.target.getAttribute("typeID")) choices = choicesPool[i];
+            }
+            var posters = Object.keys(choices.getElementsByTagName("div")).map(function (key) {
+                return choices.getElementsByTagName("div")[key];
+            }).slice(0, 9);
+            var targetRect = e.target.getBoundingClientRect();
+            e.target.parentElement.style.left = e.target.parentElement.getBoundingClientRect().left + "px";
+            e.target.parentElement.style.top = e.target.parentElement.getBoundingClientRect().top + "px";
+            e.target.parentElement.style.position = "absolute";
+            e.target.parentElement.style.animation = "fadeOut 1 " + ms / 2 + "ms both";
+            var css = [];
+            for (i = 0; i < posters.length; i++) {
+                var rect = posters[i].getBoundingClientRect();
+                css[i] = "0% {left:" + Math.round(targetRect.left) + "px;top:" + Math.round(targetRect.top) + "px;} 100% {left:" + Math.round(rect.left) + "px;top:" + Math.round(rect.top) + "px;}";
+            }
+            choices.classList.remove("hidden");
+            posters[0].style.zIndex = 100;
+            for (i = 0; i < posters.length; i++) {
+                posters[i].style.position = "absolute";
+                cssAnimate(posters[i], css[i], ms + "ms", 1, "cubic-bezier(0, 0, 0, 0.5)", "forwards", 0, "");
+                setTimeout(function (i) {
+                    posters[i].style.position = "";
+                    e.target.parentElement.style.display = "none";
+                }, ms, i);
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="type">
+        <div class="posterWrap" onclick="doPunch(event,1000);" typeID="1"><img src="http://www.jpl.nasa.gov/visions-of-the-future/images/grand_tour-small.jpg" class="poster" /></div>
+        <div class="posterWrap" onclick="doPunch(event,1000);" typeID="2"><img src="https://s-media-cache-ak0.pinimg.com/736x/ab/e4/87/abe48733e38c4091a21711ce486d467f.jpg" class="poster" /></div>
+        <div class="posterWrap" onclick="doPunch(event,1000);" typeID="3"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+    </div>
+    <div class="choices hidden" typeID="1">
+        <div class="posterWrap"><img src="http://www.jpl.nasa.gov/visions-of-the-future/images/grand_tour-small.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+    </div>
+    <div class="choices hidden" typeID="2">
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/ab/e4/87/abe48733e38c4091a21711ce486d467f.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+        <div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+    </div>
+    <div class="choices hidden" typeID="3">
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+        <div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+    </div>
+</body>
+
+</html>
