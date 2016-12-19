@@ -1,40 +1,44 @@
 <html>
 
 <head>
-<meta name="viewport" content="initial-scale=1, maximum-scale=1">
-    <style>
-        body {
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        
-        @media all and (orientation:portrait) {
-            .choices,
-            #type {
-                text-align: justify;
-                text-align-last: justify;
-                vertical-align: middle;
-                line-height: 33vh;
-                font-size: 0;
-                word-break: 3;
-            }
-            .posterWrap {
-                width: 33vw;
-                text-align: center;
-                text-align-last: center;
-                display: inline-block;
-            }
-            .poster {
-                max-width: 30vw;
-                max-height: 30vh;
-                width: auto;
-                height: auto;
-                vertical-align: middle;
-            }
-        }
-        
-        @media all and (orientation:landscape) {
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+	<style>
+		body {
+			text-align: center;
+			margin: 0;
+			padding: 0;
+		}
+		/*@media all and (orientation:portrait) {*/
+		
+		.choices,
+		#type {
+			text-align: justify;
+			text-align-last: justify;
+			vertical-align: middle;
+			line-height: 33vh;
+			font-size: 0;
+			word-break: 3;
+			width: 100%;
+			height: 100%;
+		}
+		
+		.posterWrap {
+			width: 33vw;
+			text-align: center;
+			text-align-last: center;
+			display: inline-block;
+		}
+		
+		.poster {
+			max-width: 30vw;
+			max-height: 30vh;
+			width: auto;
+			height: auto;
+			vertical-align: middle;
+			pointer-events: none;
+		}
+		/*}*/
+		/*@media all and (orientation:landscape) {
             .choices,
             #type {
                 columns: 3;
@@ -55,163 +59,198 @@
                 width: auto;
                 height: auto;
             }
-        }
-        
-        #type {
-            display: block;
-            z-index: 1;
-        }
-        
-        #punchChoicesWrap {
-            position: fixed;
-            opacity: 0;
-        }
-        
-        .choices.hidden {
-            position: fixed;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            z-index: -100;
-            pointer-events: none;
-        }
-        
-        body:not(#type) .posterWrap {
-            z-index: 1000;
-        }
-        
-        @keyframes fadeOut {
-            from {
-                opacity: 1.0;
-            }
-            to {
-                opacity: 0.0;
-            }
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0.0;
-            }
-            to {
-                opacity: 1.0;
-            }
-        }
-    </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        }*/
+		
+		#type {
+			display: block;
+			z-index: 1;
+		}
+		
+		#punchChoicesWrap {
+			position: fixed;
+			opacity: 0;
+		}
+		
+		.choices.hidden {
+			position: fixed;
+			top: 0;
+			left: 0;
+			opacity: 0;
+			z-index: -100;
+			pointer-events: none;
+		}
+		
+		body:not(#type) .posterWrap {
+			z-index: 1000;
+		}
+		
+		@keyframes fadeOut {
+			from {
+				opacity: 1.0;
+			}
+			to {
+				opacity: 0.0;
+			}
+		}
+		
+		@keyframes fadeIn {
+			from {
+				opacity: 0.0;
+			}
+			to {
+				opacity: 1.0;
+			}
+		}
+	</style>
+	<script src="http://192.168.2.101:8888/target/target-script-min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/hammerjs/2.0.8/hammer.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.4.1/velocity.min.js"></script>
+	<script>
+		function domConvertPermanentRect(e, positionType) {
+			var positionType = positionType || "absolute";
+			if (e && e.getBoundingClientRect) {
+				var rect = e.getBoundingClientRect();
+				$(e).css({
+					left: rect.left,
+					top: rect.top,
+					width: rect.width,
+					height: rect.height,
+					position: positionType
+				});
+			}
+		}
 
-<script src="https://ajax.googleapis.com/ajax/libs/hammerjs/2.0.8/hammer.min.js"></script>
-    <script>
-        function init() {
-            var icons = $("#type .posterWrap");
-            for (i = 0; i < icons.length; i++) {
-                var k = i
-                var mc = new Hammer.Manager(icons[i]);
-                var pinch = new Hammer.Pinch();
-                var rotate = new Hammer.Rotate();
-                mc.add([pinch, rotate]);
-                mc.on("pinch rotate", function (e) {
-                    var typeID = icons[k].getAttribute("typeID");
-                    var choice = $(".choices[typeID='" + typeID + "']")[0];
-                    var chosenChildren = $(choice).find(".posterWrap");
-                    var iconRect = icons[k].getBoundingClientRect();
-                    var choiceRect = choice.getBoundingClientRect();
-                    chosenChildren = chosenChildren.slice(0, 9);
-                    $("#type").css({
-                        position: "absolute"
-                        , left: $("#type")[0].getBoundingClientRect().left
-                        , top: $("#type")[0].getBoundingClientRect().top
-                    });
-                    choice.classList.remove("hidden");
-                    choice.style.left = iconRect.left - choiceRect.width / 2 + "px";
-                    choice.style.top = iconRect.top - choiceRect.height / 2 + "px";
-                    
-                    var ratio = 5
-                    if (e.scale <= ratio) {
-                        $(chosenChildren[0]).css({
-                            transform: "translateY(" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px) " + "translateX(" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $("#type .posterWrap").css("opacity", 1 - (e.scale / ratio));
-                        $(chosenChildren[1]).css({
-                            transform: "translateY(" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $(chosenChildren[2]).css({
-                            transform: "translateX(-" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px) " + "translateY(" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $(chosenChildren[3]).css({
-                            transform: "translateX(" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $(chosenChildren[5]).css({
-                            transform: "translateX(-" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $(chosenChildren[6]).css({
-                            transform: "translateX(" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px) " + "translateY(-" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $(chosenChildren[7]).css({
-                            transform: "translateY(-" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        $(chosenChildren[8]).css({
-                            transform: "translateX(-" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px) " + "translateY(-" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)"
-                            , opacity: e.scale / ratio
-                        });
-                        console.log(chosenChildren[8]);
-                        $("#type .posterWrap").css("opacity", 1 - (e.scale / ratio));
-                    }
-                }.bind(this));
-            }
-        }
-    </script>
+		function init() {
+			var icons = $("#type .posterWrap");
+			for (i = 0; i < icons.length; i++) {
+				var mc = new Hammer.Manager(icons[i]);
+				var pinch = new Hammer.Pinch();
+				var rotate = new Hammer.Rotate();
+				mc.add([pinch, rotate]);
+				mc.on("pinch rotate move", function (e) {
+					var typeID = e.target.getAttribute("typeID");
+					var choice = $(".choices[typeID='" + typeID + "']")[0];
+					var chosenChildren = $(choice).find(".posterWrap");
+					var iconRect = e.target.getBoundingClientRect();
+					var choiceRect = choice.getBoundingClientRect();
+					chosenChildren = chosenChildren.slice(0, 9);
+					domConvertPermanentRect($("#type")[0]);
+					choice.classList.remove("hidden");
+					$(choice).css({
+						left: iconRect.left - choiceRect.width / 3,
+						top: choiceRect.height / 3 * (Math.floor(($("#type .posterWrap").index(e.target)) / 3) - 1),
+						position: "absolute"
+					});
+
+					var ratio = 5
+					if (e.scale <= ratio) {
+						$(chosenChildren[0]).css({
+							transform: "translateY(" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px) " + "translateX(" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$("#type .posterWrap").css("opacity", 1 - (e.scale / ratio));
+						$(chosenChildren[1]).css({
+							transform: "translateY(" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$(chosenChildren[2]).css({
+							transform: "translateX(-" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px) " + "translateY(" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$(chosenChildren[3]).css({
+							transform: "translateX(" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$(chosenChildren[5]).css({
+							transform: "translateX(-" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$(chosenChildren[6]).css({
+							transform: "translateX(" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px) " + "translateY(-" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$(chosenChildren[7]).css({
+							transform: "translateY(-" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+						$(chosenChildren[8]).css({
+							transform: "translateX(-" + chosenChildren[1].getBoundingClientRect().width * (1 - e.scale / ratio) + "px) " + "translateY(-" + chosenChildren[1].getBoundingClientRect().height * (1 - e.scale / ratio) + "px)",
+							opacity: e.scale / ratio
+						});
+
+						$("#type .posterWrap").css("opacity", 1 - (e.scale / ratio));
+					}
+				}.bind(this));
+			}
+		}
+	</script>
 </head>
 
 <body onload="init();">
-    <div id="type">
-        <div class="posterWrap" typeID="1"><img src="http://www.jpl.nasa.gov/visions-of-the-future/images/grand_tour-small.jpg" class="poster" /></div>
-        <div class="posterWrap" typeID="2"><img src="https://s-media-cache-ak0.pinimg.com/736x/ab/e4/87/abe48733e38c4091a21711ce486d467f.jpg" class="poster" /></div>
-        <div class="posterWrap" typeID="3"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
-        <div class="posterWrap" typeID="3"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
-        <div class="posterWrap" typeID="3"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
-        <div class="posterWrap" typeID="3"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
-    </div>
-    <div class="choices hidden" typeID="1">
-        <div class="posterWrap"><img src="http://www.jpl.nasa.gov/visions-of-the-future/images/grand_tour-small.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
-    </div>
-    <div class="choices hidden" typeID="2">
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/ab/e4/87/abe48733e38c4091a21711ce486d467f.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
-        <div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
-    </div>
-    <div class="choices hidden" typeID="3">
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
-        <div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
-    </div>
+	<div id="type">
+		<div class="posterWrap" typeID="1"><img src="http://www.jpl.nasa.gov/visions-of-the-future/images/grand_tour-small.jpg" class="poster" /></div>
+		<div class="posterWrap" typeID="2"><img src="https://s-media-cache-ak0.pinimg.com/736x/ab/e4/87/abe48733e38c4091a21711ce486d467f.jpg" class="poster" /></div>
+		<div class="posterWrap" typeID="3"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+		<div class="posterWrap" typeID="4"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+		<div class="posterWrap" typeID="5"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+		<div class="posterWrap" typeID="6"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+	</div>
+	<div class="choices hidden" typeID="1">
+		<div class="posterWrap"><img src="http://www.jpl.nasa.gov/visions-of-the-future/images/grand_tour-small.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+	</div>
+	<div class="choices hidden" typeID="2">
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/ab/e4/87/abe48733e38c4091a21711ce486d467f.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+		<div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+	</div>
+	<div class="choices hidden" typeID="3">
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+	</div>
+	<div class="choices hidden" typeID="4">
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+	</div>
+	<div class="choices hidden" typeID="5">
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1BYHoNWk/1/0/thumbnail_large/canva-rock-music-concert-poster-MAB1BYHoNWk.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1GLyFELM/1/0/thumbnail_large/canva-concert-for-kids-fundraising-event-poster-MAB1GLyFELM.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1AwXVWxE/1/0/thumbnail_large/canva-deep-blue-green-techno-concert-poster-MAB1AwXVWxE.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MACCt4AEsc4/1/0/thumbnail_large/canva-orange-and-dark-blue-college-poster-MACCt4AEsc4.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="http://www.draplin.com/pics/ddc_thick_lines_posters_no01.gif" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAB1YyFyGY0/1/0/thumbnail_large/canva-movie-fund-raising-event-poster-MAB1YyFyGY0.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/d7/d6/ae/d7d6ae768606d96d23ee247827d79c73.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://s-media-cache-ak0.pinimg.com/736x/86/48/02/864802d9fae547f8b72a1c88af852162.jpg" class="poster" /></div>
+		<div class="posterWrap"><img src="https://marketplace.canva.com/MAA_AVswM_A/1/screen/canva-colorful-circles-poster-MAA_AVswM_A.png" class="poster" /></div>
+	</div>
 </body>
 
 </html>
